@@ -1,12 +1,17 @@
-package com.wogame.nbmediation;
+package com.wogame.nbmediation.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
@@ -14,6 +19,9 @@ import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAppDownloadListener;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.nbmediation.sdk.mobileads.TTAdManagerHolder;
+import com.qq.e.comm.net.NetworkCallBack;
+import com.wogame.nbmediation.NbAdService;
+import com.wogame.nbmediation.R;
 import com.wogame.nbmediation.utils.UIUtils;
 
 import androidx.annotation.MainThread;
@@ -22,7 +30,7 @@ import androidx.annotation.MainThread;
 /**
  * 开屏广告Activity示例
  */
-public class SplashActivity extends Activity {
+public class SplashActivity {
     private static final String TAG = "SplashActivity";
     private TTAdNative mTTAdNative;
     private FrameLayout mSplashContainer;
@@ -31,17 +39,18 @@ public class SplashActivity extends Activity {
 
     //开屏广告加载超时时间,建议大于3000,这里为了冷启动第一次加载到广告并且展示,示例设置了3000ms
     private static final int AD_TIME_OUT = 3000;
-    private String mCodeId = "801121648";
+    private String mCodeId = "887328594";
     private boolean mIsExpress = false; //是否请求模板广告
 
-    @SuppressWarnings("RedundantCast")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
-        mSplashContainer = (FrameLayout) findViewById(R.id.splash_container);
+
+    View mViewRoot;
+    Activity mActivity;
+
+    public void initSplashActivity(Activity activity) {
+        mActivity = activity;
+
         //step2:创建TTAdNative对象
-        mTTAdNative = TTAdManagerHolder.get().createAdNative(this);
+        mTTAdNative = TTAdManagerHolder.get().createAdNative(activity);
         getExtraInfo();
         //在合适的时机申请权限，如read_phone_state,防止获取不了imei时候，下载类广告没有填充的问题
         //在开屏时候申请不太合适，因为该页面倒计时结束或者请求超时会跳转，在该页面申请权限，体验不好
@@ -51,31 +60,8 @@ public class SplashActivity extends Activity {
     }
 
     private void getExtraInfo() {
-        Intent intent = getIntent();
-        if(intent == null) {
-            return;
-        }
-        String codeId = intent.getStringExtra("splash_rit");
-        if (!TextUtils.isEmpty(codeId)){
-         mCodeId = codeId;
-        }
-        mIsExpress = intent.getBooleanExtra("is_express", false);
     }
 
-    @Override
-    protected void onResume() {
-        //判断是否该跳转到主页面
-        if (mForceGoMain) {
-            goToMainActivity();
-        }
-        super.onResume();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mForceGoMain = true;
-    }
 
     /**
      * 加载开屏广告
@@ -86,8 +72,8 @@ public class SplashActivity extends Activity {
         if (mIsExpress) {
             //个性化模板广告需要传入期望广告view的宽、高，单位dp，请传入实际需要的大小，
             //比如：广告下方拼接logo、适配刘海屏等，需要考虑实际广告大小
-            float expressViewWidth = UIUtils.getScreenWidthDp(this);
-            float expressViewHeight = UIUtils.getHeight(this);
+            float expressViewWidth = UIUtils.getScreenWidthDp(mActivity);
+            float expressViewHeight = UIUtils.getHeight(mActivity);
             adSlot = new AdSlot.Builder()
                     .setCodeId(mCodeId)
                     .setSupportDeepLink(true)
@@ -129,12 +115,8 @@ public class SplashActivity extends Activity {
                 }
                 //获取SplashView
                 View view = ad.getSplashView();
-                if (view != null && mSplashContainer != null && !SplashActivity.this.isFinishing()) {
-                    mSplashContainer.removeAllViews();
-                    //把SplashView 添加到ViewGroup中,注意开屏广告view：width >=70%屏幕宽；height >=50%屏幕高
-                    mSplashContainer.addView(view);
-                    //设置不开启开屏广告倒计时功能以及不显示跳过按钮,如果这么设置，您需要自定义倒计时逻辑
-                    //ad.setNotAllowSdkCountdown();
+                if (view != null) {
+                    showSplash(view);
                 }else {
                     goToMainActivity();
                 }
@@ -211,17 +193,35 @@ public class SplashActivity extends Activity {
                 }
             }
         }, AD_TIME_OUT);
+    }
 
+    private void showSplash(View view){
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+        @SuppressLint("WrongViewCast") LinearLayout fragment_bannerad = (LinearLayout) mActivity.findViewById(R.id.splash_container);
+        LayoutInflater inflater = LayoutInflater.from(mActivity);
+        mViewRoot = inflater.inflate(R.layout.activity_splash, fragment_bannerad, false);
+        mActivity.addContentView(mViewRoot, params);
+        mSplashContainer = (FrameLayout)mViewRoot.findViewById(R.id.splash_container);
+
+        mSplashContainer.removeAllViews();
+        //把SplashView 添加到ViewGroup中,注意开屏广告view：width >=70%屏幕宽；height >=50%屏幕高
+        mSplashContainer.addView(view);
+        //设置不开启开屏广告倒计时功能以及不显示跳过按钮,如果这么设置，您需要自定义倒计时逻辑
+        //ad.setNotAllowSdkCountdown();
     }
 
     /**
      * 跳转到主页面
      */
     private void goToMainActivity() {
-        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-        startActivity(intent);
-        mSplashContainer.removeAllViews();
-        this.finish();
+//        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+//        startActivity(intent);
+        if(mSplashContainer != null) mSplashContainer.removeAllViews();
+        if(mViewRoot != null){
+            ViewGroup viewGroup = ((ViewGroup)mViewRoot.getParent());
+            viewGroup.removeView(mViewRoot);
+        }
     }
 
     private void showToast(String msg) {

@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.wogame.nbmediation">
+    <application>
+<!--        <activity-->
+<!--            android:name=".activity.SplashActivity"-->
+<!--            android:configChanges="keyboard|orientation|screenSize"-->
+<!--            android:screenOrientation="portrait"-->
+<!--            android:theme="@style/Theme.Splash">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+
+<!--        </activity>-->
+    </application>
+</manifest>

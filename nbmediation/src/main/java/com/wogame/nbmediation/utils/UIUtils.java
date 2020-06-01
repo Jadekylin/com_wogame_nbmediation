@@ -1,4 +1,4 @@
-package com.union_test.toutiao.utils;
+package com.wogame.nbmediation.utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -130,7 +130,7 @@ public class UIUtils {
      * @return 0 if it is not notch ; return 1 means notch
      * @throws IllegalArgumentException if the key exceeds 32 characters
      */
-    public static int getInt(String key,Activity activity) {
+    public static int getInt(String key, Activity activity) {
         int result = 0;
         if (isMiui()){
             try {
