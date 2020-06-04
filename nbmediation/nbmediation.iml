@@ -140,6 +140,9 @@
     <orderEntry type="library" name="Gradle: :hyadxopensdk:@aar" level="project" />
     <orderEntry type="library" name="Gradle: :GDTSDK.unionNormal.4.191.1061:@aar" level="project" />
     <orderEntry type="library" name="Gradle: :open_ad_sdk_2.9.5.5:@aar" level="project" />
+    <orderEntry type="library" name="Gradle: :ks_adsdk-2.6.9-publish-release:@aar" level="project" />
+    <orderEntry type="library" name="Gradle: :nb_ks:@aar" level="project" />
+    <orderEntry type="library" name="Gradle: :nb_zyt:@aar" level="project" />
     <orderEntry type="module" module-name="hyadxopen" />
     <orderEntry type="module" module-name="tencentad" />
     <orderEntry type="module" module-name="tiktok" />
