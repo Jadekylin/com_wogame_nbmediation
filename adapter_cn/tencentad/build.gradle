@@ -27,7 +27,6 @@ android.libraryVariants.all { variant ->
 }
 dependencies {
     compileOnly(name: 'nm-android-sdk', ext: 'aar')
-    compileOnly(name: 'GDTSDK.unionNormal.4.191.1061', ext: 'aar')
     compileOnly(name: 'android-query-full.0.26.7', ext: 'jar')
 }
 

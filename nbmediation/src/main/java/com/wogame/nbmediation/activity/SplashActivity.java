@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdNative;
+import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTAppDownloadListener;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.nbmediation.sdk.mobileads.TTAdManagerHolder;
@@ -50,7 +51,7 @@ public class SplashActivity {
         mActivity = activity;
 
         //step2:创建TTAdNative对象
-        mTTAdNative = TTAdManagerHolder.get().createAdNative(activity);
+        mTTAdNative = TTAdSdk.getAdManager().createAdNative(activity);
         getExtraInfo();
         //在合适的时机申请权限，如read_phone_state,防止获取不了imei时候，下载类广告没有填充的问题
         //在开屏时候申请不太合适，因为该页面倒计时结束或者请求超时会跳转，在该页面申请权限，体验不好

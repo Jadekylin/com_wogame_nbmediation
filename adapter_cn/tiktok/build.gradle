@@ -27,7 +27,6 @@ android.libraryVariants.all { variant ->
 dependencies {
 //    implementation project(':nm-android-sdk')
     compileOnly(name: 'open_ad_sdk_2.9.5.5', ext: 'aar')
-    compileOnly(name: 'nm-android-sdk', ext: 'aar')
 }
 
 repositories {

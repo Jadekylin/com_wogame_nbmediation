@@ -6,6 +6,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -180,6 +181,7 @@ public class NbAdService extends AdInterface {
                 NewApiUtils.printLog("onRewardedVideoAdClicked " + scene);
                 if (mCallBack != null) {
                     mCallBack.onCallBack(AppMacros.AT_RewardVideo, AppMacros.CALL_AD_CLICK, sceneId,"","","");
+                    mCallBack.onAdStatusListen(AppMacros.AT_RewardVideo, AppMacros.CALL_AD_CLICK, sceneId,"","","");
                 }
             }
 
@@ -189,10 +191,12 @@ public class NbAdService extends AdInterface {
                 if (mIsVideoComplete) {
                     if (mCallBack != null) {
                         mCallBack.onCallBack(AppMacros.AT_RewardVideo, AppMacros.CALL_SUCCESS,sceneId,"","","");
+                        mCallBack.onAdStatusListen(AppMacros.AT_RewardVideo, AppMacros.CALL_SUCCESS, sceneId,"","","");
                     }
                 } else {
                     if (mCallBack != null) {
                         mCallBack.onCallBack(AppMacros.AT_RewardVideo, AppMacros.CALL_CANCEL, sceneId,"","","");
+                        mCallBack.onAdStatusListen(AppMacros.AT_RewardVideo, AppMacros.CALL_CANCEL, sceneId,"","","");
                     }
                 }
                 mIsVideoComplete = false;
@@ -238,6 +242,7 @@ public class NbAdService extends AdInterface {
             public void onInterstitialAdClosed(Scene scene) {
                 if (mCallBack != null) {
                     mCallBack.onCallBack(AppMacros.AT_Interstitial,AppMacros.CALL_CANCEL, sceneId,"","","");
+                    mCallBack.onAdStatusListen(AppMacros.AT_Interstitial,AppMacros.CALL_CANCEL, sceneId,"","","");
                 }
             }
 
@@ -245,6 +250,7 @@ public class NbAdService extends AdInterface {
             public void onInterstitialAdClicked(Scene scene) {
                 if (mCallBack != null) {
                     mCallBack.onCallBack(AppMacros.AT_Interstitial, AppMacros.CALL_AD_CLICK, sceneId,"","","");
+                    mCallBack.onAdStatusListen(AppMacros.AT_Interstitial, AppMacros.CALL_AD_CLICK, sceneId,"","","");
                 }
             }
         });
@@ -264,6 +270,8 @@ public class NbAdService extends AdInterface {
                     if (null != view.getParent()) {
                         ((ViewGroup) view.getParent()).removeView(mBannerView);
                     }
+                    if(mCallBack != null)
+                        mCallBack.onAdStatusListen(AppMacros.AT_Banner_Bottom, AppMacros.CALL_AD_LOADED, "Banner","","","");
                     showBannerAds();
                 } catch (Exception e) {
                     Log.e("AdtDebug", e.getLocalizedMessage());
@@ -272,11 +280,14 @@ public class NbAdService extends AdInterface {
 
             @Override
             public void onAdFailed(String error) {
+                if(mCallBack != null)
+                    mCallBack.onAdStatusListen(AppMacros.AT_Banner_Bottom, AppMacros.CALL_ERROR, "Banner","","",error);
             }
 
             @Override
             public void onAdClicked() {
-
+                if(mCallBack != null)
+                    mCallBack.onAdStatusListen(AppMacros.AT_Banner_Bottom, AppMacros.CALL_AD_CLICK, "Banner","","","");
             }
         });
         bannerAd.setAdSize(AdSize.AD_SIZE_320X50);
@@ -290,10 +301,13 @@ public class NbAdService extends AdInterface {
                     RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
             adBannerContainer.addView(mBannerView, layoutParams);
+
+            if(mCallBack != null)
+                mCallBack.onAdStatusListen(AppMacros.AT_Banner_Bottom, AppMacros.CALL_AD_SHOW, sceneId,"","","");
         }
     }
 
-
+    //region Native
     public void loadAndShowNative() {
         if (nativeAd != null) {
             nativeAd.destroy();
@@ -304,16 +318,23 @@ public class NbAdService extends AdInterface {
             @Override
             public void onAdFailed(String msg) {
                 Log.e("AdtDebug", msg);
+
+                if(mCallBack != null)
+                    mCallBack.onAdStatusListen(AppMacros.AT_Native, AppMacros.CALL_ERROR, "Native","","",msg);
             }
 
             @Override
             public void onAdReady(AdInfo info) {
                 mNativeInfo = info;
+                if(mCallBack != null)
+                    mCallBack.onAdStatusListen(AppMacros.AT_Native, AppMacros.CALL_AD_LOADED, "Native","","","");
             }
 
             @Override
             public void onAdClicked() {
                 Log.e("AdtDebug","onAdClicked");
+                if(mCallBack != null)
+                    mCallBack.onAdStatusListen(AppMacros.AT_Native, AppMacros.CALL_AD_CLICK, "Native","","","");
             }
         });
         nativeAd.loadAd();
@@ -322,25 +343,39 @@ public class NbAdService extends AdInterface {
     private void showNative(){
         if(mNativeInfo != null){
             adNativeContainer.removeAllViews();
+            if(mCallBack != null) mCallBack.onAdStatusListen(AppMacros.AT_Native, AppMacros.CALL_AD_SHOW, sceneId,"","","");
             adView = LayoutInflater.from(mActivity).inflate(R.layout.native_ad_layout, null);
 
             TextView title = adView.findViewById(R.id.ad_title);
-            title.setText(mNativeInfo.getTitle());
+            if (!TextUtils.isEmpty(mNativeInfo.getTitle())) {
+                title.setText(mNativeInfo.getTitle());
+            }
 
             TextView desc = adView.findViewById(R.id.ad_desc);
-            desc.setText(mNativeInfo.getDesc());
+            if (!TextUtils.isEmpty(mNativeInfo.getDesc())) {
+                desc.setText(mNativeInfo.getDesc());
+            }
 
             Button btn = adView.findViewById(R.id.ad_btn);
-            btn.setText(mNativeInfo.getCallToActionText());
+            if (!TextUtils.isEmpty(mNativeInfo.getCallToActionText())) {
+                btn.setText(mNativeInfo.getCallToActionText());
+            } else {
+                btn.setVisibility(View.GONE);
+            }
 
             MediaView mediaView = adView.findViewById(R.id.ad_media);
 
             nativeAdView = new NativeAdView(mActivity);
 
             AdIconView adIconView = adView.findViewById(R.id.ad_icon_media);
+            RelativeLayout adDescRl = adView.findViewById(R.id.ad_desc_rl);
+            if (mNativeInfo.isTemplate())
+            {
+                adDescRl.setVisibility(View.GONE);
+            }
 
-            DisplayMetrics displayMetrics = mActivity.getResources().getDisplayMetrics();
-            mediaView.getLayoutParams().height = (int) (displayMetrics.widthPixels / (1200.0 / 627.0));
+            //DisplayMetrics displayMetrics = mActivity.getResources().getDisplayMetrics();
+            mediaView.getLayoutParams().height = (int) gameAdH;//(int) (displayMetrics.widthPixels / (1080.0 / 627.0));
 
             nativeAdView.addView(adView);
 
@@ -356,6 +391,7 @@ public class NbAdService extends AdInterface {
             adNativeContainer.addView(nativeAdView, layoutParams);
         }
     }
+    //endregion
 
     /****************************************************************************************************/
 
@@ -369,6 +405,7 @@ public class NbAdService extends AdInterface {
             } else {
                 if (mCallBack != null) {
                     mCallBack.onCallBack(type, AppMacros.CALL_FALIED,sceneId,"","","");
+                    mCallBack.onAdStatusListen(type, AppMacros.CALL_FALIED, sceneId,"","","");
                 }
             }
         } else if (type == AppMacros.AT_Banner_Bottom) {
@@ -380,6 +417,7 @@ public class NbAdService extends AdInterface {
             else {
                 if (mCallBack != null) {
                     mCallBack.onCallBack(type, AppMacros.CALL_FALIED,sceneId,"","","");
+                    mCallBack.onAdStatusListen(type, AppMacros.CALL_FALIED, sceneId,"","","");
                 }
             }
         } else if (type == AppMacros.AT_Native) {
